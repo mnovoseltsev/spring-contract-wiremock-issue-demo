@@ -16,8 +16,8 @@ import static spring.contract.wiremock.issue.demo.RestTemplateClient.SOME_PATH
 @RunWith(SpringRunner)
 @SpringBootTest
 @AutoConfigureWireMock(port = 0)
-@ActiveProfiles("interceptor")
-class NotOrderedCustomizerTest {
+@ActiveProfiles(['http-client-override', 'issue']) //remove 'issue' profile to have green test
+class HttpClientOverrideTest {
 
     @Value('${wiremock.server.port}')
     Integer port
@@ -26,14 +26,20 @@ class NotOrderedCustomizerTest {
     RestTemplateBuilder restTemplateBuilder
 
     @Test
-    void "Should not fail when ordered customizer added interceptor to rest template"() {
-        stubFor(get(urlEqualTo(SOME_PATH))
-                .willReturn(aResponse().withStatus(200).withBody('Yeah!')))
+    void "Should not process Set-Cookie header from response, because we configured HttpClient to do so"() {
+
+        def someCookie = 'ABC'
+
+        stubFor(get(urlPathEqualTo(SOME_PATH)).willReturn(
+                aResponse()
+                        .withStatus(200)
+                        .withHeader('Set-Cookie', "$someCookie=123")))
 
         def client = new RestTemplateClient(restTemplateBuilder.rootUri("http://localhost:$port"))
 
-        def body = client.get()
+        3.times { client.get() }
 
-        assert body == 'Yeah!'
+        verify(exactly(3), getRequestedFor(urlPathMatching(SOME_PATH))
+                .withCookie(someCookie, absent()))
     }
 }

@@ -11,11 +11,12 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*
+import static spring.contract.wiremock.issue.demo.RestTemplateClient.SOME_PATH
 
 @RunWith(SpringRunner)
 @SpringBootTest
 @AutoConfigureWireMock(port = 0)
-@ActiveProfiles("bug")
+@ActiveProfiles(['bug', 'interceptor'])
 class OrderedCustomizerTest {
 
     @Value('${wiremock.server.port}')
@@ -26,7 +27,7 @@ class OrderedCustomizerTest {
 
     @Test
     void "Should not fail when ordered customizer added interceptor to rest template"() {
-        stubFor(get(urlEqualTo('/some-url'))
+        stubFor(get(urlEqualTo(SOME_PATH))
                 .willReturn(aResponse().withStatus(200).withBody('Yeah!')))
 
         def client = new RestTemplateClient(restTemplateBuilder.rootUri("http://localhost:$port"))

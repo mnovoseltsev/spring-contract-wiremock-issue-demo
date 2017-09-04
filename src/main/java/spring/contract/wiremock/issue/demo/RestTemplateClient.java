@@ -5,6 +5,8 @@ import org.springframework.web.client.RestTemplate;
 
 public class RestTemplateClient {
 
+    public static final String SOME_PATH = "/some-url";
+
     private final RestTemplate restTemplate;
 
     public RestTemplateClient(RestTemplateBuilder restTemplateBuilder) {
@@ -13,6 +15,6 @@ public class RestTemplateClient {
 
     public String get() {
 
-        return restTemplate.getForObject("/some-url", String.class);
+        return restTemplate.getForObject(SOME_PATH, String.class);
     }
 }
